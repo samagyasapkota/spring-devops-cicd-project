@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter on all VMs
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+        - '192.168.56.10:9100'  # jenkins-app
+        - '192.168.56.20:9100'  # k8s-node
+        - '192.168.56.30:9100'  # monitoring
+
+  # Spring Boot Application
+  - job_name: 'petclinic-app'
+    metrics_path: '/petclinic/actuator/prometheus'
+    static_configs:
+      - targets: ['192.168.56.10:8080']
+
+  # MySQL Exporter
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['192.168.56.10:9104']
+
+# Alerting rules
+rule_files:
+  - 'alerts.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']

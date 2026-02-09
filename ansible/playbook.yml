@@ -1,0 +1,45 @@
+---
+- name: Deploy Spring PetClinic Application
+  hosts: all
+  become: yes
+  
+  vars:
+    app_name: petclinic
+    docker_image: samagyasapkota/spring-petclinic:latest
+    
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - git
+          - curl
+        state: present
+        
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+        
+    - name: Pull Docker image
+      docker_image:
+        name: "{{ docker_image }}"
+        source: pull
+        
+    - name: Deploy application with Docker Compose
+      docker_compose:
+        project_src: /opt/petclinic
+        state: present
+        
+    - name: Ensure application is running
+      uri:
+        url: http://localhost:8080/petclinic/
+        status_code: 200
+      retries: 5
+      delay: 10
