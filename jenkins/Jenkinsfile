@@ -1,0 +1,99 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKERHUB_USERNAME = 'samagyasapkota'
+        IMAGE_NAME = 'spring-petclinic'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        GIT_REPO = 'https://github.com/samagyasapkota/spring-devops-cicd-project.git'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'staging', url: "${GIT_REPO}"
+            }
+        }
+        
+        stage('Build with Maven') {
+            steps {
+                dir('JavaApp-CICD') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                dir('JavaApp-CICD') {
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh """
+                        docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} \
+                                     -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest \
+                                     -f docker/Dockerfile .
+                    """
+                }
+            }
+        }
+        
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    sh """
+                        echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin
+                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
+                        docker logout
+                    """
+                }
+            }
+        }
+        
+        stage('Deploy to Staging') {
+            steps {
+                script {
+                    sh """
+                        docker-compose -f docker/docker-compose.yml down || true
+                        docker-compose -f docker/docker-compose.yml up -d
+                    """
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                script {
+                    sh """
+                        sleep 30
+                        curl -f http://localhost:8080/petclinic/ || exit 1
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}

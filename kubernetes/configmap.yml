@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: petclinic-config
+data:
+  mysql.url: "jdbc:mysql://mysql-service:3306/petclinic"
+  app.name: "Spring PetClinic"

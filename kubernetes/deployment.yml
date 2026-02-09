@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-app
+  labels:
+    app: petclinic
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: petclinic
+  template:
+    metadata:
+      labels:
+        app: petclinic
+    spec:
+      containers:
+      - name: petclinic
+        image: samagyasapkota/spring-petclinic:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "mysql"
+        - name: MYSQL_URL
+          valueFrom:
+            configMapKeyRef:
+              name: petclinic-config
+              key: mysql.url
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: petclinic-secret
+              key: mysql.user
+        - name: MYSQL_PASS
+          valueFrom:
+            secretKeyRef:
+              name: petclinic-secret
+              key: mysql.password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /petclinic/
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /petclinic/
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic-mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: petclinic-secret
+              key: mysql.root.password
+        - name: MYSQL_DATABASE
+          value: "petclinic"
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: petclinic-secret
+              key: mysql.user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: petclinic-secret
+              key: mysql.password
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
