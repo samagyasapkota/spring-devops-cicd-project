@@ -74,15 +74,16 @@ pipeline {
         }
         
         stage('Health Check') {
-            steps {
-                script {
-                    sh """
-                        sleep 30
-                        curl -f http://localhost:8080/petclinic/ || exit 1
-                    """
-                }
-            }
+    steps {
+        script {
+            sh """
+                sleep 30
+                # Change to your Kubernetes NodePort
+                curl -f http://192.168.56.20:30080/ || exit 1
+            """
         }
+    }
+}
     }
     
     post {
