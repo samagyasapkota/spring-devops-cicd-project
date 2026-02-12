@@ -1,21 +1,20 @@
 pipeline {
     agent any
-    
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKERHUB_USERNAME = 'samagyasapkota'
         IMAGE_NAME = 'spring-petclinic'
         IMAGE_TAG = "${BUILD_NUMBER}"
         GIT_REPO = 'https://github.com/samagyasapkota/spring-devops-cicd-project.git'
+        KUBE_NAMESPACE = 'petclinic'
+        NODE_IP = '192.168.56.20'
     }
-    
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'staging', url: "${GIT_REPO}"
             }
         }
-        
         stage('Build with Maven') {
             steps {
                 dir('JavaApp-CICD') {
@@ -23,7 +22,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Run Tests') {
             steps {
                 dir('JavaApp-CICD') {
@@ -36,7 +34,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -48,7 +45,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Push to DockerHub') {
             steps {
                 script {
@@ -61,19 +57,26 @@ pipeline {
                 }
             }
         }
-        
         stage('Deploy to Staging') {
             steps {
                 script {
                     sh """
-                        docker-compose -f docker/docker-compose.yml down || true
-                        docker-compose -f docker/docker-compose.yml up -d
+                        # Deploy to Kubernetes instead of docker-compose
+                        kubectl set image deployment/petclinic-app \
+                            petclinic=${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} \
+                            -n ${KUBE_NAMESPACE} || true
+                        
+                        # Wait for rollout
+                        kubectl rollout status deployment/petclinic-app -n ${KUBE_NAMESPACE} --timeout=5m || true
+                        
+                        # Show current status
+                        kubectl get pods -n ${KUBE_NAMESPACE}
                     """
                 }
             }
         }
-        
         stage('Health Check') {
+
     steps {
         script {
             sh """
@@ -86,6 +89,21 @@ pipeline {
 }
     }
     
+           steps {
+                script {
+                    sh """
+                        echo "Waiting for application to be ready..."
+                        sleep 30
+                        
+                        # Health check on Kubernetes NodePort
+                        curl -f http://${NODE_IP}:30080/ || exit 1
+                        echo "Health check PASSED!"
+                    """
+                }
+            }
+        }
+    }
+ (Update Jenkinsfile for Kubernetes deployment)
     post {
         always {
             cleanWs()
