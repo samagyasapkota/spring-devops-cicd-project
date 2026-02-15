@@ -39,7 +39,7 @@ pipeline {
             steps {
                 sh """
                     kubectl set image deployment/petclinic-app \
-                        petclinic-app=${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                        springboot-petclinic=${DOCKER_IMAGE}:${BUILD_NUMBER} \
                         -n petclinic
                     kubectl rollout status deployment/petclinic-app -n petclinic
                 """
