@@ -1,9 +1,10 @@
 global:
   resolve_timeout: 5m
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'your-email@gmail.com'
-  smtp_auth_username: 'your-email@gmail.com'
-  smtp_auth_password: 'your-app-password'
+  smtp_from: 'samagya.sap@gmail.com'
+  smtp_auth_username: 'samagya.sap@gmail.com'
+  smtp_auth_password: 'jumt beeh nnjo bbtq'
+  smtp_require_tls: true
 
 route:
   receiver: 'email-alerts'
@@ -15,7 +16,8 @@ route:
 receivers:
   - name: 'email-alerts'
     email_configs:
-      - to: 'your-email@gmail.com'
+      - to: 'samagya.sap@gmail.com'
+        send_resolved: true
         headers:
           Subject: '🚨 Alert: {{ .GroupLabels.alertname }}'
         html: |
