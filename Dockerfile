@@ -3,11 +3,10 @@ WORKDIR /app
 COPY JavaApp-CICD/pom.xml .
 COPY JavaApp-CICD/src ./src
 RUN mvn clean package -DskipTests
-RUN ls -la target/
+RUN ls -la /app/target/
 
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-RUN ls -la /app/
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
