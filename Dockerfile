@@ -1,9 +1,8 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-COPY JavaApp-CICD/pom.xml .
-COPY JavaApp-CICD/src ./src
+COPY JavaApp-CICD/ ./
 RUN mvn clean package -DskipTests
-RUN ls -la /app/target/
+RUN echo "=== JAR LOCATION ===" && find /app/target -name "*.jar" | head -5
 
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
