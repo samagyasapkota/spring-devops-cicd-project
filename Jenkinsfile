@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE = 'your-dockerhub-username/spring-app'
+        DOCKER_IMAGE = 'samagyasapkota/spring-app'
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
     
