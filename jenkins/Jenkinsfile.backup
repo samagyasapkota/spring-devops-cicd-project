@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKERHUB_USERNAME = 'samagyasapkota'
@@ -7,12 +8,14 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
         GIT_REPO = 'https://github.com/samagyasapkota/spring-devops-cicd-project.git'
     }
+    
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'staging', url: "${GIT_REPO}"
             }
         }
+        
         stage('Build with Maven') {
             steps {
                 dir('JavaApp-CICD') {
@@ -20,6 +23,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Run Tests') {
             steps {
                 dir('JavaApp-CICD') {
@@ -32,6 +36,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -43,6 +48,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Push to DockerHub') {
             steps {
                 script {
@@ -55,29 +61,30 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy to Staging') {
             steps {
                 script {
                     sh """
-                        kubectl set image deployment/petclinic-app \
-       petclinic=samagyasapkota/spring-petclinic:${IMAGE_TAG} \
-       -n petclinic
-   kubectl rollout status deployment/petclinic-app -n petclinic --timeout=5m
+                        docker-compose -f docker/docker-compose.yml down || true
+                        docker-compose -f docker/docker-compose.yml up -d
                     """
                 }
             }
         }
+        
         stage('Health Check') {
             steps {
                 script {
                     sh """
                         sleep 30
-                        curl -f http://192.168.56.20:30080/ || exit 1
+                        curl -f http://localhost:8080/petclinic/ || exit 1
                     """
                 }
             }
         }
     }
+    
     post {
         always {
             cleanWs()
