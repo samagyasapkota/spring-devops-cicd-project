@@ -37,18 +37,22 @@ pipeline {
         }
         stage('Deploy to Kubernetes') {
             steps {
-                sh """
-                    kubectl set image deployment/petclinic-app \
-                        springboot-petclinic=${DOCKER_IMAGE}:${BUILD_NUMBER} \
-                        -n petclinic
-                    kubectl rollout status deployment/petclinic-app -n petclinic
-                """
+                retry(3) {
+                    sh """
+                        kubectl set image deployment/petclinic-app \
+                            springboot-petclinic=${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                            -n petclinic
+                        kubectl rollout status deployment/petclinic-app -n petclinic --timeout=120s
+                    """
+                }
             }
         }
         stage('Scale to 5 Pods') {
             steps {
-                sh 'kubectl scale deployment petclinic-app --replicas=5 -n petclinic'
-                sh 'kubectl get pods -n petclinic'
+                retry(3) {
+                    sh 'kubectl scale deployment petclinic-app --replicas=5 -n petclinic'
+                    sh 'kubectl get pods -n petclinic'
+                }
             }
         }
     }
