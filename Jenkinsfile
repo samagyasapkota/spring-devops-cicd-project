@@ -17,8 +17,7 @@ pipeline {
         stage('Build Maven') {
             steps {
                 dir('JavaApp-CICD') {
-                    sh 'chmod +x mvnw'
-                    sh './mvnw clean package -DskipTests'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
