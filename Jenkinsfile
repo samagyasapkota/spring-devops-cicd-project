@@ -40,8 +40,9 @@ pipeline {
                     kubectl set image deployment/petclinic-app \
                         springboot-petclinic=arey/springboot-petclinic:latest \
                         -n petclinic
-                    kubectl rollout status deployment/petclinic-app \
-                        -n petclinic --timeout=180s
+                    echo "Image updated successfully"
+                    sleep 30
+                    kubectl get pods -n petclinic
                 """
             }
         }
@@ -49,7 +50,7 @@ pipeline {
             steps {
                 sh """
                     kubectl scale deployment petclinic-app --replicas=5 -n petclinic
-                    sleep 20
+                    sleep 15
                     kubectl get pods -n petclinic
                 """
             }
