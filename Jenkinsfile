@@ -1,19 +1,16 @@
 pipeline {
     agent any
-    
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_IMAGE = 'samagyasapkota/spring-app'
-        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        KUBECONFIG = '/home/jenkins/.kube/config'
     }
-    
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
         stage('Build Maven') {
             steps {
                 dir('JavaApp-CICD') {
@@ -21,7 +18,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -30,7 +26,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Push to Docker Hub') {
             steps {
                 script {
@@ -40,20 +35,30 @@ pipeline {
                 }
             }
         }
-        
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh """
-                        kubectl --kubeconfig=${KUBECONFIG} set image deployment/spring-app spring-app=${DOCKER_IMAGE}:${BUILD_NUMBER} -n default
-                        kubectl --kubeconfig=${KUBECONFIG} rollout status deployment/spring-app -n default
-                    """
-                }
+                sh """
+                    kubectl set image deployment/petclinic-app \
+                        petclinic-app=${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                        -n petclinic
+                    kubectl rollout status deployment/petclinic-app -n petclinic
+                """
+            }
+        }
+        stage('Scale to 5 Pods') {
+            steps {
+                sh 'kubectl scale deployment petclinic-app --replicas=5 -n petclinic'
+                sh 'kubectl get pods -n petclinic'
             }
         }
     }
-    
     post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
         always {
             sh 'docker logout'
         }
