@@ -1,0 +1,18 @@
+#!/bin/bash
+echo "=========================================="
+echo "Starting Jenkins VM provisioning..."
+echo "=========================================="
+vagrant up jenkins-app
+echo ""
+echo "Running setup script inside jenkins-app VM..."
+vagrant ssh jenkins-app -c "sudo bash /vagrant/scripts/setup-jenkins-app.sh"
+echo ""
+echo "=========================================="
+echo "✅ Jenkins VM setup complete!"
+echo "=========================================="
+echo ""
+echo "📍 Access Jenkins at: http://192.168.56.10:8080"
+echo ""
+echo "🔑 Get Jenkins password:"
+echo "vagrant ssh jenkins-app -c 'sudo cat /var/lib/jenkins/secrets/initialAdminPassword'"
+echo ""

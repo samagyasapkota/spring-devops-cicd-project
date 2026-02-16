@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
     node.vm.hostname = "jenkins-app"
     node.vm.network "private_network", ip: "192.168.56.10"
     node.vm.network "forwarded_port", guest: 8080, host: 8080  # Jenkins
-    node.vm.network "forwarded_port", guest: 8081, host: 8081  # Spring App
+    node.vm.network "forwarded_port", guest: 8081, host: 8091  # Spring App
     
     node.vm.provider "virtualbox" do |vb|
       vb.name = "jenkins-app"
@@ -34,12 +34,18 @@ Vagrant.configure("2") do |config|
       apt-get install -y openjdk-17-jdk maven
       
       # Install Jenkins
-      wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | apt-key add -
-      sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
-      apt-get update
-      apt-get install -y jenkins
-      systemctl start jenkins
-      systemctl enable jenkins
+      # Jenkins Key (NEW METHOD)
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key \
+  | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+# Jenkins Repo
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ \
+  | tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+apt-get update
+apt-get install -y jenkins
+
       
       echo "=========================================="
       echo "Jenkins Initial Password:"

@@ -115,11 +115,11 @@ spring-devops-cicd-project/
 
 | Service | URL | Credentials |
 |---|---|---|
-| Jenkins | http://192.168.56.10:8080 | admin / (configured) |
+| Jenkins | http://localhost:8080 | admin / (configured) |
 | PetClinic App | http://192.168.56.20:30080 | — |
-| Prometheus | http://192.168.56.30:9090 | — |
-| Grafana | http://192.168.56.30:3000 | admin / admin |
-| Alertmanager | http://192.168.56.30:9093 | — |
+| Prometheus | http://localhost:9090 | — |
+| Grafana | http://localhost:3000 | admin / admin |
+| Alertmanager | http://localhost:9093 | — |
 
 ---
 
@@ -143,14 +143,14 @@ vagrant up
 ```
 
 ### 3. Access Jenkins
-Open http://192.168.56.10:8080 and trigger the pipeline
+Open http://localhost:8080 and trigger the pipeline
 
 ### 4. Access the application
 Open http://192.168.56.20:30080
 
 ### 5. Access monitoring
-- Grafana: http://192.168.56.30:3000
-- Prometheus: http://192.168.56.30:9090
+- Grafana: http://localhost:3000
+- Prometheus: http://localhost:9090
 
 ---
 

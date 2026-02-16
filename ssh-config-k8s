@@ -1,0 +1,14 @@
+Host k8s-node
+  HostName 127.0.0.1
+  User vagrant
+  Port 2201
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile /cygdrive/c/Users/Samag/.vagrant.d/insecure_private_keys/vagrant.key.ed25519
+  IdentityFile /cygdrive/c/Users/Samag/.vagrant.d/insecure_private_keys/vagrant.key.rsa
+  IdentitiesOnly yes
+  LogLevel FATAL
+  PubkeyAcceptedKeyTypes +ssh-rsa
+  HostKeyAlgorithms +ssh-rsa
+
