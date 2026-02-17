@@ -123,7 +123,8 @@ SYSCTLEOF
     node.vm.network "private_network", ip: "192.168.56.30"
     node.vm.network "forwarded_port", guest: 9090, host: 9090  # Prometheus
     node.vm.network "forwarded_port", guest: 3000, host: 3000  # Grafana
-    
+    monitoring.vm.network "forwarded_port", guest: 9093, host: 9093  # Alertmanager
+
     node.vm.provider "virtualbox" do |vb|
       vb.name = "monitoring"
       vb.memory = 2048
